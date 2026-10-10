@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import pytest
 
 LOCAL_BINARY = "build-target/target_unit_tests"
-REMOTE_DIR = "/tmp/example_tests"
+REMOTE_DIR = "/home/runner/hil_workspace"
 REMOTE_BINARY = f"{REMOTE_DIR}/target_unit_tests"
 REMOTE_REPORT = f"{REMOTE_DIR}/results.xml"
 LOCAL_REPORT_DIR = "reports"
@@ -15,7 +15,7 @@ def test_crosscompiled_firmware_on_target(target):
 
     # Transfer to target
     ssh.run(f"mkdir -p {REMOTE_DIR}")
-    ssh.put(src=LOCAL_BINARY, dst=REMOTE_BINARY)
+    ssh.put(LOCAL_BINARY, REMOTE_BINARY)
     ssh.run(f"chmod +x {REMOTE_BINARY}")
 
     # Run GoogleTest generating JUnit XML
@@ -26,7 +26,7 @@ def test_crosscompiled_firmware_on_target(target):
     os.makedirs(LOCAL_REPORT_DIR, exist_ok=True)
     local_report = os.path.join(LOCAL_REPORT_DIR, "target_results.xml")
     try:
-        ssh.get(src=REMOTE_REPORT, dst=local_report)
+        ssh.get(REMOTE_REPORT, local_report)
     finally:
         ssh.run(f"rm -rf {REMOTE_DIR}")
 
