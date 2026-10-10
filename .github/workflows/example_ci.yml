@@ -1,0 +1,44 @@
+name: Example Build & HIL Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: [self-hosted, labgrid-rack]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Local Cross-Compilation
+      - name: Cross-Compile Firmware & Unit Tests
+        run: |
+          cmake -B build-target -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-toolchain.cmake \
+            -DBUILD_TARGET_TESTS=ON
+          cmake --build build-target --target target_unit_tests
+
+      # Local Labgrid HIL Execution
+      - name: Execute HIL Tests on Raspberry Pi
+        run: |
+          # Activate runner's virtual environment
+          source /home/runner/labgrid-hil-test/labgrid-venv/bin/activate
+
+          mkdir -p reports
+
+          pytest tests/hil/test_remote_execution.py \
+            --lg-env=tests/hil/environment.yaml \
+            --junitxml=reports/target_results.xml \
+            -v -s
+
+      # Test Report Visualization
+      - name: Publish Test Report
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: reports/target_results.xml
