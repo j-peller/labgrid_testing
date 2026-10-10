@@ -38,7 +38,9 @@ jobs:
 
       # Test Report Visualization
       - name: Publish Test Report
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: dorny/test-reporter@v1
         if: always()
         with:
-          files: reports/target_results.xml
+          name: Target Unit Test Results
+          path: reports/target_results.xml
+          reporter: java-junit
