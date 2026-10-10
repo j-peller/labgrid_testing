@@ -2,7 +2,7 @@ targets:
   main:
     resources:
       NetworkService:
-        address: "192.168.1.108"
+        address: "192.168.2.108"
         username: "runner" 
     drivers:
       SSHDriver: {}
